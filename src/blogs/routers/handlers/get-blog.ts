@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { HttpStatus } from "../../../core/types/types";
 import { createErrorMessages } from "../../../core/utils/error.utils";
 import { blogRepository } from "../../repositories/blog.repository";
-import { mapToBlogViewModel } from "../mappers/map-to-blog-view-model";
+import { mapToBlogViewModel } from "../mappers/map-to-blog-output";
 
 
 

@@ -1,23 +1,89 @@
-import { Blog } from "../types/blogs.types";
+import { Blog } from "../domain/blog";
 import { BlogInputDto } from "../dto/blogs.input-dto";
 import { getBlogCollection } from "../../db/mongo.db";
 import { ObjectId, WithId } from "mongodb";
+import { BlogAttributes } from "../application/dtos/blog-attributes";
+import { BlogQueryInput } from "../routers/input/blog-query.input";
+import { RepositoryNotFoundError } from "../../core/errors/ropository-not-found.error";
 
 export const blogRepository = {
-    async getBlogsAll(): Promise<WithId<Blog>[]> {
-        return getBlogCollection().find().toArray();
-    },
+    async findMany(
+        queryDto: BlogQueryInput,
+    ): Promise<{ items: WithId<Blog>[]; totalCount: number }> {
+        
+        const {
+            pageNumber,
+            pageSize,
+            sortBy,
+            sortDirection,
+            searchBlogNameTerm,
+            searchBlogDescriptionTerm,
+            searchBlogWebsiteUrlTerm,
+            filterBlogCreatedAtTerm,
+            filterBlogIsMembershipTerm,
+        } = queryDto;
 
-    async getBlogById(id: string): Promise<WithId<Blog> | null> {
+        const skip = (pageNumber - 1) * pageSize;
+        const filter : any = {};
+
+        if (searchBlogNameTerm) {
+            filter.name = { $regex: searchBlogNameTerm, $options: 'i' };
+        } 
+
+        if (searchBlogDescriptionTerm) {
+            filter.description = { $regex: searchBlogDescriptionTerm, $options: 'i' };
+        } 
+
+        if (searchBlogWebsiteUrlTerm) {
+            filter.websiteUrl = { $regex: searchBlogWebsiteUrlTerm, $options: 'i' };
+        } 
+
+        if (filterBlogIsMembershipTerm !== undefined) {
+            filter.isMembership = filterBlogIsMembershipTerm;
+        }
+        
+        if (filterBlogCreatedAtTerm) {
+            const date = new Date(filterBlogCreatedAtTerm);
+            const nextDay = new Date(date);
+            nextDay.setDate(date.getDate() + 1);
+
+            filter.createdAt = {
+                $gte: date,
+                $lt: nextDay
+            };
+        }
+
+        const items = await getBlogCollection()
+            .find(filter)
+            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+            .skip(skip)
+            .limit(pageSize)
+            .toArray();
+
+        const totalCount = await getBlogCollection().countDocuments(filter);
+
+            return { items, totalCount };
+        },
+
+    async findById(id: string): Promise<WithId<Blog> | null> {
         return getBlogCollection().findOne({ _id: new ObjectId(id) });
     },
 
-    async createBlog(newBlog: Blog): Promise<WithId<Blog>> {
-        const insertResult = await getBlogCollection().insertOne(newBlog);
-        return { _id: insertResult.insertedId, ...newBlog };
+    async findByIdOrFail(id: string): Promise<WithId<Blog>> {
+        const res = await getBlogCollection().findOne({ _id: new ObjectId(id) });
+
+        if (!res) {
+            throw new RepositoryNotFoundError('Blog not exist');
+        }
+        return res;
     },
 
-    async updateBlog(id: string, dto: BlogInputDto): Promise<void> {
+    async createBlog(newBlog: Blog): Promise<string> {
+        const insertResult = await getBlogCollection().insertOne(newBlog);
+        return insertResult.insertedId.toString();
+    },
+
+    async updateBlog(id: string, dto: BlogAttributes): Promise<void> {
         const updateResult = await getBlogCollection().updateOne(
         { 
             _id: new ObjectId(id),
@@ -32,7 +98,7 @@ export const blogRepository = {
     )
 
     if (updateResult.matchedCount < 1) {
-        throw new Error('Blog not exist');
+        throw new RepositoryNotFoundError('Blog not exist');
     }
    return;
 },
@@ -41,7 +107,7 @@ export const blogRepository = {
             _id: new ObjectId(id),
         });
         if (deleteResult.deletedCount < 1) {
-            throw new Error('Blog not exist');
+            throw new RepositoryNotFoundError('Blog not exist');
         }
         return;
     },
