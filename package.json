@@ -1,0 +1,42 @@
+{
+  "name": "2-lesson_blogger_platform",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.2.1",
+    "express-validator": "^7.3.1",
+    "mongodb": "^7.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@jest/types": "^30.2.0",
+    "@types/express": "^5.0.6",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.2.0",
+    "@types/supertest": "^6.0.3",
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "jest": "^30.2.0",
+    "nodemon": "^3.1.11",
+    "prettier": "^3.8.1",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.4.6",
+    "typescript": "^5.9.3"
+  },
+  "scripts": {
+    "watch": "tsc -w",
+    "build": "tsc",
+    "dev": "nodemon --inspect dist/index.js",
+    "jest": "jest -i",
+    "lint": "eslint --fix .",
+    "start": "node dist/index.js",
+    "vercel-build": "npm run build",
+    "format": "prettier --write .",
+    "ngrok": "ngrok http 5003"
+  }
+}
