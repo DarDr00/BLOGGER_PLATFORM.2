@@ -1,22 +1,21 @@
 import { WithId } from "mongodb";
 import { Blog } from "../../domain/blog";
-import { DriverOu}
-import { BlogViewModel } from "../../types/blog-view-model";
+import { BlogOutput } from "../output/blog.output";
+import { ResourceType } from "../../../core/types/resource-type";
 
-export function mapToBlogViewModel(blog: WithId<Blog>): BlogViewModel {
+export function mapToBlogOutput(blog: WithId<Blog>): BlogOutput {
+    return {
+        data: {
     
-    if (!blog || !blog._id) {
-        throw new Error('Invalid blog object');
-    }
-    
-    const viewModel = {
+        type: ResourceType.Blogs,
         id: blog._id.toString(),
+        attributes: {
         name: blog.name,
         description: blog.description,
         websiteUrl: blog.websiteUrl,
         createdAt: blog.createdAt,
-        isMembership: blog.isMembership
-    };
-    
-    return viewModel;
-}
+        isMembership: blog.isMembership,
+     },
+    },
+   };
+ }

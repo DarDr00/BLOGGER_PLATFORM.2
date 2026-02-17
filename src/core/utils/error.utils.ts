@@ -1,9 +1,13 @@
-import { errors } from "undici-types";
-import { ValidationError } from "../../blogs/types/validationError";
+import { APIErrorResult, FieldError } from "../types/api-error.types";
 
 
-export const createErrorMessages = (errors : ValidationError[], 
-): { errorMessages: ValidationError[] } => {
-    return { errorMessages: errors };
-};
+export const createErrorMessages = (errors: { message: string; field: string }[] | null
+): APIErrorResult => {
+    return {
+        errorsMessages: errors?.map(error => ({
+            message: error.message,
+            field: error.field,
+        })) || null
+    };
+}
 
