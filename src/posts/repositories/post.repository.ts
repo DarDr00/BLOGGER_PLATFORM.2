@@ -1,50 +1,108 @@
+import { Post } from "../domain/post";
+import { postCollection } from "../../db/mongo.db";
 import { ObjectId, WithId } from "mongodb";
-import { PostInputDto } from "../dto/posts.input-dto";
-import { getPostCollection } from "../../db/mongo.db";
-import { Post } from "../types/posts.types";
-
+import { RepositoryNotFoundError } from "../../core/errors/ropository-not-found.error";
+import { PostQueryInput } from "../input/post-query.input";
+import { PostAttributes } from "../dtos/post-attributes";
 
 export const postRepository = {
-    async getPostsAll(): Promise<WithId<Post>[]> {
-        return getPostCollection().find().toArray();
-    },
+    async findMany(
+        queryDto: PostQueryInput,
+    ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
+              const {
+                  pageNumber,
+                  pageSize,
+                  sortBy,
+                  sortDirection,
+              } = queryDto;
+      
+              const filter : any = {};
+              const skip = (pageNumber - 1) * pageSize;
+              
+              const [items, totalCount] = await Promise.all([
+                postCollection
+                .find(filter)
+                .sort({ [sortBy]: sortDirection })
+                .skip(skip)
+                .limit(pageSize)
+                .toArray(),
+                postCollection.countDocuments(filter),
+              ]);
+                return { items, totalCount } ;
+              },
+      
+          async findPostsByBlog(
+            queryDto: PostQueryInput,
+            blogId: string,
+          ): Promise<{ items: WithId<Post>[];    
+            pagesCount: number;
+            page: number;
+            pageSize: number;
+            totalCount: number }> {
+              const { pageNumber = 1, pageSize = 10 } = queryDto;
+              
+                const items = await postCollection
+            .find({ blogId })
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .toArray();
+    
+            const totalCount = await postCollection.countDocuments({ blogId });
+            return {
+            items,
+            totalCount,
+            pagesCount: Math.ceil(totalCount / pageSize),
+            page: pageNumber,
+            pageSize
+           };
+          },
+          
+          async findById(id: string): Promise<WithId<Post> | null> {
+              return postCollection.findOne({ _id: new ObjectId(id) });
+          },
+      
+          async findByIdOrFail(id: string): Promise<WithId<Post>> {
+              const res = await postCollection.findOne({ _id: new ObjectId(id) });
+      
+              if (!res) {
+                  throw new RepositoryNotFoundError('Post not exist');
+              }
+              return res;
+          },
+      
+          async createPost(newPost: Post): Promise<string> {
+              const insertResult = await postCollection.insertOne(newPost);
+              return insertResult.insertedId.toString();
+          },
+      
+          async updatePost(id: string, dto: PostAttributes): Promise<void> {
+              const updateResult = await postCollection.updateOne(
+              { 
+                  _id: new ObjectId(id),
+              },
+              {
+                  $set: {
+                  title: dto.title,
+                  shortDescription: dto.shortDescription,
+                  blogId: dto.blogId,
+                  content: dto.content
+                  },
+              },
+          )
+      
+          if (updateResult.matchedCount < 1) {
+              throw new RepositoryNotFoundError('Post with id ${id} not found');
+          }
+         return;
+      },
 
-    async getPostById(id: string): Promise<WithId<Post> | null> {
-        return getPostCollection().findOne({ _id: new ObjectId(id) });
-    },
-
-    async createPost(newPost: Post): Promise<WithId<Post>> {
-        const insertResult = await getPostCollection().insertOne(newPost);
-        return { ...newPost, _id: insertResult.insertedId };
-    },
-
-    async updatePost(id: string, dto: PostInputDto): Promise<void> {
-        const updateResult = await getPostCollection().updateOne(
-        { 
-            _id: new ObjectId(id),
-        },
-        {
-            $set: {
-            title: dto.title,
-            shortDescription: dto.shortDescription,
-            content: dto.content,
-            blogId: dto.blogId
-            },
-        },
-    )
-
-    if (updateResult.matchedCount < 1) {
-        throw new Error('Post not exist');
-    }
-   return;
-},
-    async deletePost(id: string): Promise<void> {
-        const deleteResult = await getPostCollection().deleteOne({
-            _id: new ObjectId(id),
-        });
-        if (deleteResult.deletedCount < 1) {
-            throw new Error('Post not exist');
-        }
-        return;
-    },
-};
+          async deletePost(id: string): Promise<void> {
+              const deleteResult = await postCollection.deleteOne({
+                  _id: new ObjectId(id),
+              });
+              if (deleteResult.deletedCount < 1) {
+                  throw new RepositoryNotFoundError('Post not exist');
+              }
+              return;
+          },
+      };

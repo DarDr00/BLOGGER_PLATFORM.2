@@ -1,10 +1,9 @@
-import { BlogViewModel } from "../../blogs/types/blog-view-model";
 
 export type Post = {
    title: string,
    shortDescription: string,
    content: string,
-   blogId: BlogViewModel['id'],
+   blogId: string,
    blogName: string,
    createdAt: Date
 };

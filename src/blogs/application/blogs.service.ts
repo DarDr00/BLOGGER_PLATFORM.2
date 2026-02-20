@@ -6,8 +6,8 @@ import { DomainError } from "../../core/errors/domain.error";
 import { BlogAttributes } from "./dtos/blog-attributes";
 import { BlogQueryInput } from "../routers/input/blog-query.input";
 import { Paginator } from "../../core/types/pagination-and-sorting";
-import { PostViewModel } from "../../posts/types/post-view-model";
-// import PostQueryInput 
+import { PostQueryInput } from "../../posts/input/post-query.input";
+import { PostOutput } from "../../posts/routers/output/post.output";
 
     export enum BlogErrorCode {
   NotFound = 'BLOG_NOT_FOUND',
@@ -30,9 +30,9 @@ import { PostViewModel } from "../../posts/types/post-view-model";
         async findPostsForBlog(
             blogId: string,
             queryDto: PostQueryInput    
-        ): Promise<Paginator<PostViewModel>> {
+        ): Promise<Paginator<PostOutput>> {
             const blog = await blogRepository.findByIdOrFail(blogId);
-            const posts = await postRepository.findBlogById(blogId, queryDto);
+            const posts = await postRepository.findPostsByBlog(blogId, queryDto);
 
             return {
             pagesCount: posts.pagesCount,
@@ -45,7 +45,7 @@ import { PostViewModel } from "../../posts/types/post-view-model";
                 shortDescription: post.shortDescription,
                 content: post.content,
                 blogId: post.blogId,
-                blogName: blog.name,  // ← берем из блога!
+                blogName: blog.name,  
                 createdAt: post.createdAt
             }))
         };
@@ -70,12 +70,20 @@ import { PostViewModel } from "../../posts/types/post-view-model";
         },
 
         async delete(id: string): Promise<void> {
-            await blogRepository.deleteBlog(id);
+             const posts = await postRepository.findPostsByBlog(id, { 
+            pageNumber: 1, 
+            pageSize: 1 
+        });
+  
+        if (posts.items.length > 0) {
+         throw new DomainError(
+         'Cannot delete blog with existing posts',
+         BlogErrorCode.Forbidden
+        );
+       }
+  
+        await blogRepository.deleteBlog(id);
             return;
         }
-
-
-
-
     }
 

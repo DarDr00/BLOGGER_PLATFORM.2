@@ -1,6 +1,6 @@
 import { Blog } from "../domain/blog";
 import { BlogInputDto } from "../dto/blogs.input-dto";
-import { getBlogCollection } from "../../db/mongo.db";
+import { blogCollection } from "../../db/mongo.db";
 import { ObjectId, WithId } from "mongodb";
 import { BlogAttributes } from "../application/dtos/blog-attributes";
 import { BlogQueryInput } from "../routers/input/blog-query.input";
@@ -53,24 +53,24 @@ export const blogRepository = {
             };
         }
 
-        const items = await getBlogCollection()
+        const items = await blogCollection
             .find(filter)
             .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
             .skip(skip)
             .limit(pageSize)
             .toArray();
 
-        const totalCount = await getBlogCollection().countDocuments(filter);
+        const totalCount = await blogCollection.countDocuments(filter);
 
             return { items, totalCount };
         },
 
     async findById(id: string): Promise<WithId<Blog> | null> {
-        return getBlogCollection().findOne({ _id: new ObjectId(id) });
+        return blogCollection.findOne({ _id: new ObjectId(id) });
     },
 
     async findByIdOrFail(id: string): Promise<WithId<Blog>> {
-        const res = await getBlogCollection().findOne({ _id: new ObjectId(id) });
+        const res = await blogCollection.findOne({ _id: new ObjectId(id) });
 
         if (!res) {
             throw new RepositoryNotFoundError('Blog not exist');
@@ -79,12 +79,12 @@ export const blogRepository = {
     },
 
     async createBlog(newBlog: Blog): Promise<string> {
-        const insertResult = await getBlogCollection().insertOne(newBlog);
+        const insertResult = await blogCollection.insertOne(newBlog);
         return insertResult.insertedId.toString();
     },
 
     async updateBlog(id: string, dto: BlogAttributes): Promise<void> {
-        const updateResult = await getBlogCollection().updateOne(
+        const updateResult = await blogCollection.updateOne(
         { 
             _id: new ObjectId(id),
         },
@@ -103,7 +103,7 @@ export const blogRepository = {
    return;
 },
     async deleteBlog(id: string): Promise<void> {
-        const deleteResult = await getBlogCollection().deleteOne({
+        const deleteResult = await blogCollection.deleteOne({
             _id: new ObjectId(id),
         });
         if (deleteResult.deletedCount < 1) {

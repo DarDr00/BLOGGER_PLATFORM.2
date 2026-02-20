@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { ObjectId } from "mongodb";
 import { HttpStatus } from "../../../core/types/types";
 import { createErrorMessages } from "../../../core/utils/error.utils";
-import { PostInputDto } from "../../dto/posts.input-dto";
+import { PostInputDto } from "../../dtos/posts.input-dto";
 import { postRepository } from "../../repositories/post.repository";
 import { blogRepository } from "../../../blogs/repositories/blog.repository";
 

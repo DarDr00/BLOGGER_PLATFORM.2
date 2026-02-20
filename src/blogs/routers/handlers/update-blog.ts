@@ -1,27 +1,19 @@
 import { Request, Response } from "express";
 import { HttpStatus } from "../../../core/types/types";
-import { createErrorMessages } from "../../../core/utils/error.utils";
-import { BlogInputDto } from "../../dto/blogs.input-dto";
-import { blogRepository } from "../../repositories/blog.repository";
+import { blogService } from "../../application/blogs.service";
+import { BlogUpdateInput } from "../input/blog-update.input";
+import { errorsHandler } from "../../../core/errors/errors.handler";
 
-export async function updateBlogHandler(req:Request<{id: string}, {}, BlogInputDto>, res: Response, 
+export async function updateBlogHandler(
+    req:Request<{id: string}, {}, BlogUpdateInput>, 
+    res: Response, 
 ) {
     try {
     const id = req.params.id;
-    const blog = await blogRepository.getBlogById(id);
 
-    if (!blog) {
-        res.status(HttpStatus.NOT_FOUND_404).send(createErrorMessages([{
-            message: "Blog not found",
-            field: "id"
-        }]),
-      );
-      return;
-    };
-
-    await blogRepository.updateBlog(id, req.body);
-    res.status(HttpStatus.NO_CONTENT_204).send();
+    await blogService.update(id, req.body.data.attributes);
+    res.sendStatus(HttpStatus.NO_CONTENT_204)
     } catch (e: unknown) {
-        res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR_500)
+        errorsHandler(e, res);
     }
 }
