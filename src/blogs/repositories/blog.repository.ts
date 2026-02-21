@@ -12,10 +12,10 @@ export const blogRepository = {
     ): Promise<{ items: WithId<Blog>[]; totalCount: number }> {
         
         const {
-            pageNumber,
-            pageSize,
-            sortBy,
-            sortDirection,
+            pageNumber = 1,
+            pageSize = 10,
+            sortBy = 'createdAt',
+            sortDirection = 'desc',
             searchBlogNameTerm,
             searchBlogDescriptionTerm,
             searchBlogWebsiteUrlTerm,

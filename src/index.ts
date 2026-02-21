@@ -4,24 +4,20 @@ import { setupApp } from './setup-app';
 import { SETTINGS } from './core/settings/settings'; 
 
 
-const app = express();
-app.use(express.json());
-setupApp(app);
+const bootstrap = async () => {
+  const app = express();
 
+  setupApp(app);
 
-if (require.main === module) {
-  const startApp = async () => {
-    try {
-      await runDB(SETTINGS.MONGO_URL);
-      app.listen(SETTINGS.PORT, () => {
-        console.log(`✅ Blog API running on port ${SETTINGS.PORT}`);
-      });
-    } catch (error) {
-      console.error('❌ Failed to start application:', error);
-      process.exit(1);
-    }
-  };
-  startApp();
-}
+  const PORT = SETTINGS.PORT;
 
-export default app;
+  await runDB(SETTINGS.MONGO_URL);
+
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`Server running on http://127.0.0.1:${PORT}`);
+});
+
+  return app;
+};
+
+bootstrap();

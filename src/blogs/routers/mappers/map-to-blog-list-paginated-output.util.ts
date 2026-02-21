@@ -8,25 +8,18 @@ export function mapToBlogListPaginatedOutput(
     blogs: WithId<Blog>[],
     meta: { pagesCount: number; page: number; pageSize: number; totalCount: number },
 ): BlogListPaginatedOutput {
-    return {
-        meta: {
-            pagesCount: meta.pagesCount, 
-            page: meta.page,
-            pageSize: meta.pageSize,
-            totalCount: meta.totalCount,
-        },
-        data: blogs.map(
-            (blog): BlogDataOutput => ({
-                type: ResourceType.Blogs,
-                id: blog._id.toString(),
-                attributes: {
-                    name: blog.name,
-                    description: blog.description,
-                    websiteUrl: blog.websiteUrl,
-                    createdAt: blog.createdAt,
-                    isMembership: blog.isMembership
-                },
-            }),
-        ),
-    };
+return {
+    pagesCount: meta.pagesCount,
+    page: meta.page,
+    pageSize: meta.pageSize,
+    totalCount: meta.totalCount,
+    items: blogs.map(blog => ({
+        id: blog._id.toString(),
+        name: blog.name,
+        description: blog.description,
+        websiteUrl: blog.websiteUrl,
+        createdAt: blog.createdAt,
+        isMembership: blog.isMembership
+    }))
+}
 }

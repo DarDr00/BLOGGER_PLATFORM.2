@@ -8,6 +8,10 @@ import { BlogQueryInput } from "../routers/input/blog-query.input";
 import { Paginator } from "../../core/types/pagination-and-sorting";
 import { PostQueryInput } from "../../posts/input/post-query.input";
 import { PostOutput } from "../../posts/routers/output/post.output";
+import { ResourceType } from "../../core/types/resource-type";
+import { PostSortField } from "../../posts/input/post-sort-field";
+import { SortDirection } from "../../core/types/sort-direction";
+import { BlogInputDto } from "../dto/blogs.input-dto";
 
     export enum BlogErrorCode {
   NotFound = 'BLOG_NOT_FOUND',
@@ -34,24 +38,25 @@ import { PostOutput } from "../../posts/routers/output/post.output";
             const blog = await blogRepository.findByIdOrFail(blogId);
             const posts = await postRepository.findPostsByBlog(blogId, queryDto);
 
-            return {
-            pagesCount: posts.pagesCount,
-            page: posts.page,
-            pageSize: posts.pageSize,
-            totalCount: posts.totalCount,
-            items: posts.items.map(post => ({
-                id: post._id.toString(),
-                title: post.title,
-                shortDescription: post.shortDescription,
-                content: post.content,
-                blogId: post.blogId,
-                blogName: blog.name,  
-                createdAt: post.createdAt
-            }))
-        };
-    },
 
-        async create(dto: BlogAttributes): Promise<string> {
+    return {
+        pagesCount: posts.pagesCount,
+        page: posts.page,
+        pageSize: posts.pageSize,
+        totalCount: posts.totalCount,
+        items: posts.items.map(post => ({
+            id: post._id.toString(),
+            title: post.title,
+            shortDescription: post.shortDescription,
+            content: post.content,
+            blogId: blog._id.toString(),  
+            blogName: blog.name,     
+            createdAt: post.createdAt,      
+            }))
+          };
+        },  
+
+        async create(dto: BlogInputDto): Promise<string> {
             const newBlog: Blog = {
                 name: dto.name,
                 description: dto.description,
@@ -72,7 +77,9 @@ import { PostOutput } from "../../posts/routers/output/post.output";
         async delete(id: string): Promise<void> {
              const posts = await postRepository.findPostsByBlog(id, { 
             pageNumber: 1, 
-            pageSize: 1 
+            pageSize: 1,
+            sortBy: PostSortField.CreatedAt,  
+            sortDirection: SortDirection.Desc 
         });
   
         if (posts.items.length > 0) {

@@ -10,10 +10,10 @@ export const postRepository = {
         queryDto: PostQueryInput,
     ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
               const {
-                  pageNumber,
-                  pageSize,
-                  sortBy,
-                  sortDirection,
+                  pageNumber = 1,
+                  pageSize = 10,
+                  sortBy = 'createdAt',
+                  sortDirection = 'desc',
               } = queryDto;
       
               const filter : any = {};
@@ -32,8 +32,8 @@ export const postRepository = {
               },
       
           async findPostsByBlog(
-            queryDto: PostQueryInput,
             blogId: string,
+            queryDto: PostQueryInput,
           ): Promise<{ items: WithId<Post>[];    
             pagesCount: number;
             page: number;

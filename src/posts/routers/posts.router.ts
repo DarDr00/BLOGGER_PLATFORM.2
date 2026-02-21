@@ -1,38 +1,46 @@
 import { Router } from "express";
+import { inputValidationResultMiddleware } from "../../core/middlewares/validation/input-validation-result.middleware";
+import { superAdminGuardMiddleware } from "../../auth/middlewares/super-admin.guard-middleware";
+import { idValidation } from "../../core/validation/params-id.validation-middleware";
+import { postCreateInputValidation } from "./post.input-dto.validation-middleware";
 import { createPostHandler } from "./handlers/create-post.handler";
-import { deletePostHandler } from "./handlers/delete-post";
 import { getPostListHandler } from "./handlers/get-post.list";
 import { getPostHandler } from "./handlers/get-post";
 import { updatePostHandler } from "./handlers/update-post";
-import { postValidators } from "../validation/posts.validators";
-import { inputValidationResultMiddleware } from "../validation/inputValidationResultMiddleware";
-import { idValidation } from "../../core/validation/params-id.validation-middleware";
-import { superAdminGuardMiddleware } from "../../auth/middlewares/super-admin.guard-middleware";
+import { deletePostHandler } from "./handlers/delete-post";
+import { paginationAndSortingValidation } from "../../core/middlewares/validation/query-pagination-sorting.validation-middleware";
+import { PostSortField } from "../input/post-sort-field";
 
 const postsRouter = Router({});
 
+postsRouter.use(superAdminGuardMiddleware);
+
 postsRouter
 
-  .get('/', getPostListHandler)
+  .get('/', 
+    paginationAndSortingValidation(PostSortField),
+    inputValidationResultMiddleware,
+    getPostListHandler,
+  )
 
-  .get('/:id', idValidation, 
-               inputValidationResultMiddleware, 
-               getPostHandler)
+  .get('/:id', 
+    idValidation, 
+    inputValidationResultMiddleware, 
+    getPostHandler)
 
-  .post('/', superAdminGuardMiddleware, 
-            postValidators, 
-            inputValidationResultMiddleware, 
-            createPostHandler)
+  .post('/',
+    postCreateInputValidation, 
+    inputValidationResultMiddleware, 
+    createPostHandler)
 
-  .put('/:id', superAdminGuardMiddleware, 
-               idValidation, 
-               postValidators, 
-               inputValidationResultMiddleware, 
-               updatePostHandler)
+  .put('/:id', 
+    idValidation,  
+    inputValidationResultMiddleware, 
+    updatePostHandler)
 
-  .delete('/:id', superAdminGuardMiddleware, 
-                  idValidation, 
-                  inputValidationResultMiddleware, 
-                  deletePostHandler);
+  .delete('/:id',
+    idValidation, 
+    inputValidationResultMiddleware, 
+    deletePostHandler);
 
   export default postsRouter;

@@ -1,5 +1,11 @@
 import { PostDataOutput } from "./post-data.output";
 
 export type PostOutput = {
-    data: PostDataOutput;
+    id: string;
+    title: string;
+    shortDescription: string;
+    content: string;
+    blogId: string;
+    blogName: string;
+    createdAt: Date;
 }

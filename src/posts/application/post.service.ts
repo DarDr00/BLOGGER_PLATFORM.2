@@ -6,6 +6,9 @@ import { BlogErrorCode } from "../../blogs/application/blogs.service";
 import { Post } from "../domain/post";
 import { WithId } from "mongodb";
 import { PostQueryInput } from "../input/post-query.input";
+import { CreatePostDto } from "../../blogs/routers/input/create-post.dto";
+import { PostOutput } from "../routers/output/post.output";
+import { ResourceType } from "../../core/types/resource-type";
 
 export enum PostErrorCode {
   NotFound = 'POST_NOT_FOUND',
@@ -26,7 +29,7 @@ export const postsService = {
               blogId: string,
           ): Promise<{ items: WithId<Post>[]; totalCount: number }> {
             await blogRepository.findByIdOrFail(blogId);
-            return postRepository.findPostsByBlog(queryDto, blogId);
+            return postRepository.findPostsByBlog(blogId, queryDto);
           },
           
           async findByIdOrFail(id: string): Promise<WithId<Post>> {
@@ -47,6 +50,37 @@ export const postsService = {
   
               return await postRepository.createPost(newPost);
           },
+
+          async createPostForBlog(
+        blogId: string,
+        dto: CreatePostDto
+    ): Promise<PostOutput> {
+
+        const blog = await blogRepository.findByIdOrFail(blogId);
+        
+        const newPost: Post = {
+            title: dto.title,
+            shortDescription: dto.shortDescription,
+            content: dto.content,
+            blogId: blogId,
+            blogName: blog.name,
+            createdAt: new Date()
+        };
+        
+        const createdId = await postRepository.createPost(newPost);
+        
+        const createdPost = await postRepository.findByIdOrFail(createdId);
+        
+        return {
+        id: createdPost._id.toString(),
+        title: createdPost.title,
+        shortDescription: createdPost.shortDescription,
+        content: createdPost.content,
+        blogId: blogId,
+        blogName: blog.name,
+        createdAt: createdPost.createdAt
+           };
+         },
   
           async update(id: string, dto: PostAttributes): Promise<void> {
               await postRepository.updatePost(id, dto)

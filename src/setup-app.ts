@@ -1,10 +1,9 @@
-import express, { Express } from "express";
-import { testingRouter } from "./testing/testing.router";
-import { TESTING_PATH } from "./core/path/paths";
-import postsRouter from "./posts/routers/posts.router";
-import { POSTS_PATH } from "./core/path/paths";
-import { blogsRouter } from "./blogs/routers/blogs.router";
-import { BLOGS_PATH } from "./core/path/paths";
+import express, { Express } from 'express';
+import { setupSwagger } from './core/swagger/setup-swagger';
+import { blogsRouter } from './blogs/routers/blogs.router'
+import { testingRouter } from './testing/testing.router';
+import postsRouter from './posts/routers/posts.router'
+import { BLOGS_PATH, POSTS_PATH, TESTING_PATH } from './core/path/paths';
  
 export const setupApp = (app: Express) => {
   app.use(express.json());

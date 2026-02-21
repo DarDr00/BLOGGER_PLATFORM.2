@@ -2,37 +2,23 @@ import { Request, Response } from "express";
 import { HttpStatus } from "../../../core/types/types";
 import { mapToPostOutputUtil } from "../mappers/map-to-post-output.util";
 import { PostCreateInput } from "../../input/post-create.input";
-import { postS}
+import { postsService } from "../../application/post.service";
+import { errorsHandler } from "../../../core/errors/errors.handler";
 
-export async function createPostHandler(req:Request<{id: string}, {}, PostInputDto>, res: Response) {
-    
+export async function createPostHandler(
+    req:Request<{}, {}, PostCreateInput>, 
+    res: Response
+) { 
     try {
-        const blog = await blogRepository.getBlogById(req.body.blogId);
-        
-        if (!blog) {
-            return res.status(HttpStatus.NOT_FOUND_404).send(
-                createErrorMessages([{
-                    field: 'blogId',
-                    message: 'Blog not found'
-                }])
-            );
-        }
+        const createdPostId = await postsService.create(req.body.data.attributes);
 
-        const newPost: Post = {
-            title: req.body.title,
-            shortDescription: req.body.shortDescription,
-            content: req.body.content,
-            blogId: req.body.blogId,
-            blogName: blog.name,
-            createdAt: new Date()
-        };
+        const createdPost = await postsService.findByIdOrFail(createdPostId);
 
-        const createdPost = await postRepository.createPost(newPost);
-        const postViewModel = mapToPostViewModel(createdPost);
+        const postOutput = mapToPostOutputUtil(createdPost);
 
-        return res.status(HttpStatus.CREATED_201).json(postViewModel);
+        return res.status(HttpStatus.CREATED_201).send(postOutput);
         
     } catch (e: unknown) {
-        return res.sendStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
+        errorsHandler(e, res);
     }
 }

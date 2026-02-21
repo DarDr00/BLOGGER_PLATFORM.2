@@ -1,6 +1,6 @@
 import { body } from "express-validator";
-import { resourceTypeValidation } from "../../../core/middlewares/validation/resource-type.validation-middleware";
-import { ResourceType } from "../../../core/types/resource-type";
+import { resourceTypeValidation } from "../../core/middlewares/validation/resource-type.validation-middleware";
+import { ResourceType } from "../../core/types/resource-type";
 
 export const titleValidation = body('data.attributes.title')
 .isString()

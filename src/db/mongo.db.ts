@@ -19,7 +19,9 @@ export async function runDB(url: string): Promise<void> {
     postCollection = db.collection<Post>(POST_COLLECTION_NAME);
 
     try {
+    console.log('🔄 Connecting to MongoDB...');  
     await client.connect();
+    console.log('✅ Connected to the database');
     await db.command({ ping: 1 });
     console.log('✅ Connected to the database');
   } catch (e) {

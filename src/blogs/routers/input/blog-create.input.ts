@@ -1,9 +1,9 @@
 import { ResourceType } from "../../../core/types/resource-type";
-import { BlogAttributes } from "../../application/dtos/blog-attributes";
+import { BlogInputDto } from "../../dto/blogs.input-dto";
 
 export type BlogCreateInput = {
     data: {
         type: ResourceType.Blogs;
-        attributes: BlogAttributes;
+        attributes: BlogInputDto;
     }
 }
