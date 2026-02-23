@@ -10,10 +10,12 @@ import { idValidation } from "../../core/validation/params-id.validation-middlew
 import { superAdminGuardMiddleware } from "../../auth/middlewares/super-admin.guard-middleware";
 import { paginationAndSortingValidation } from "../../core/middlewares/validation/query-pagination-sorting.validation-middleware";
 import { BlogSortField } from "./input/blog-sort.field";
+import { postValidators } from "../../posts/routers/post-validators";
+import { createPostForBlogHandler } from "./handlers/create-post-for-blog.handler";
+import { PostSortField } from "../../posts/input/post-sort-field";
+import { getBlogPostsListHandler } from "./handlers/get-blog-posts-list.handler";
 
 export const blogsRouter = Router({});
-
-blogsRouter.use(superAdminGuardMiddleware);
 
 blogsRouter
   .get('/', 
@@ -26,10 +28,24 @@ blogsRouter
     inputValidationResultMiddleware, 
     getBlogHandler
   )
+  .get('/:id/posts',
+    idValidation,
+    paginationAndSortingValidation(PostSortField),
+    inputValidationResultMiddleware,
+    getBlogPostsListHandler
+    )
   .post('/',  
+    superAdminGuardMiddleware,
     blogValidators,
     inputValidationResultMiddleware, 
     createBlogHandler
+  )
+  .post('/:id/posts',
+    superAdminGuardMiddleware,
+    idValidation,
+    postValidators,
+    inputValidationResultMiddleware,
+    createPostForBlogHandler
   )
   .put('/:id', 
     superAdminGuardMiddleware, 

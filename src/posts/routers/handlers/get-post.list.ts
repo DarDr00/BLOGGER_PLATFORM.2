@@ -26,7 +26,6 @@ export async function getPostListHandler(
             page: queryInput.pageNumber!,
             pageSize: queryInput.pageSize!,
             totalCount: totalCount,
-            pagesCount: totalCount
         });
 
     res.send(postListOutput)

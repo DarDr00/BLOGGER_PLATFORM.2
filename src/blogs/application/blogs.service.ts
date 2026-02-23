@@ -7,11 +7,12 @@ import { BlogAttributes } from "./dtos/blog-attributes";
 import { BlogQueryInput } from "../routers/input/blog-query.input";
 import { Paginator } from "../../core/types/pagination-and-sorting";
 import { PostQueryInput } from "../../posts/input/post-query.input";
-import { PostOutput } from "../../posts/routers/output/post.output";
+import { PostViewModel } from "../../posts/routers/output/post.output";
 import { ResourceType } from "../../core/types/resource-type";
 import { PostSortField } from "../../posts/input/post-sort-field";
 import { SortDirection } from "../../core/types/sort-direction";
 import { BlogInputDto } from "../dto/blogs.input-dto";
+import { BlogUpdateInput } from "../routers/input/blog-update.input";
 
     export enum BlogErrorCode {
   NotFound = 'BLOG_NOT_FOUND',
@@ -34,7 +35,7 @@ import { BlogInputDto } from "../dto/blogs.input-dto";
         async findPostsForBlog(
             blogId: string,
             queryDto: PostQueryInput    
-        ): Promise<Paginator<PostOutput>> {
+        ): Promise<Paginator<PostViewModel>> {
             const blog = await blogRepository.findByIdOrFail(blogId);
             const posts = await postRepository.findPostsByBlog(blogId, queryDto);
 
@@ -51,7 +52,7 @@ import { BlogInputDto } from "../dto/blogs.input-dto";
             content: post.content,
             blogId: blog._id.toString(),  
             blogName: blog.name,     
-            createdAt: post.createdAt,      
+            createdAt: post.createdAt.toISOString(),      
             }))
           };
         },  
@@ -69,7 +70,7 @@ import { BlogInputDto } from "../dto/blogs.input-dto";
             return createdId;
         },
 
-        async update(id: string, dto: BlogAttributes): Promise<void> {
+        async update(id: string, dto: BlogUpdateInput): Promise<void> {
             await blogRepository.updateBlog(id, dto);
             return;
         },

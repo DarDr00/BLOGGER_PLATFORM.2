@@ -1,25 +1,22 @@
 import { WithId } from "mongodb";
 import { Blog } from "../../domain/blog";
-import { ResourceType } from "../../../core/types/resource-type";
-import { BlogListPaginatedOutput } from "../output/blog-list-paginated.output";
-import { BlogDataOutput } from "../output/blog-data.output";
+import { BlogViewModel } from "../output/blog.view-model";
+import { Paginator } from "../../../core/types/pagination-and-sorting";
+import { mapToBlogOutput } from "./map-to-blog-output";
 
 export function mapToBlogListPaginatedOutput(
-    blogs: WithId<Blog>[],
-    meta: { pagesCount: number; page: number; pageSize: number; totalCount: number },
-): BlogListPaginatedOutput {
-return {
-    pagesCount: meta.pagesCount,
-    page: meta.page,
-    pageSize: meta.pageSize,
-    totalCount: meta.totalCount,
-    items: blogs.map(blog => ({
-        id: blog._id.toString(),
-        name: blog.name,
-        description: blog.description,
-        websiteUrl: blog.websiteUrl,
-        createdAt: blog.createdAt,
-        isMembership: blog.isMembership
-    }))
-}
+    items: WithId<Blog>[],
+    params: {
+        page: number;
+        pageSize: number;
+        totalCount: number;
+    }
+): Paginator<BlogViewModel> {
+    return {
+        pagesCount: Math.ceil(params.totalCount / params.pageSize), 
+        page: params.page,
+        pageSize: params.pageSize,
+        totalCount: params.totalCount,
+        items: items.map(mapToBlogOutput) 
+    };
 }

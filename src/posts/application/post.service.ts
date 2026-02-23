@@ -1,4 +1,3 @@
-import { PostAttributes } from "../dtos/post-attributes";
 import { postRepository } from "../repositories/post.repository";
 import { blogRepository } from "../../blogs/repositories/blog.repository";
 import { DomainError } from "../../core/errors/domain.error";
@@ -7,8 +6,10 @@ import { Post } from "../domain/post";
 import { WithId } from "mongodb";
 import { PostQueryInput } from "../input/post-query.input";
 import { CreatePostDto } from "../../blogs/routers/input/create-post.dto";
-import { PostOutput } from "../routers/output/post.output";
+import { PostViewModel } from "../routers/output/post.output";
 import { ResourceType } from "../../core/types/resource-type";
+import { PostCreateInput } from "../input/post-create.input";
+import { PostUpdateInput } from "../input/post-update.input";
 
 export enum PostErrorCode {
   NotFound = 'POST_NOT_FOUND',
@@ -33,10 +34,10 @@ export const postsService = {
           },
           
           async findByIdOrFail(id: string): Promise<WithId<Post>> {
-              return postRepository.findByIdOrFail(id);
+               return postRepository.findByIdOrFail(id);
           },
   
-          async create(dto: PostAttributes): Promise<string> {
+          async create(dto: PostCreateInput): Promise<string> {
             const blog = await blogRepository.findByIdOrFail(dto.blogId);
 
             const newPost: Post = {
@@ -54,7 +55,7 @@ export const postsService = {
           async createPostForBlog(
         blogId: string,
         dto: CreatePostDto
-    ): Promise<PostOutput> {
+    ): Promise<PostViewModel> {
 
         const blog = await blogRepository.findByIdOrFail(blogId);
         
@@ -78,16 +79,23 @@ export const postsService = {
         content: createdPost.content,
         blogId: blogId,
         blogName: blog.name,
-        createdAt: createdPost.createdAt
+        createdAt: createdPost.createdAt.toISOString()
            };
          },
   
-          async update(id: string, dto: PostAttributes): Promise<void> {
-              await postRepository.updatePost(id, dto)
-              return;
+          async update(id: string, dto: PostUpdateInput): Promise<void> {
+
+           await postRepository.findByIdOrFail(id);
+    
+           if (dto.blogId) {
+           await blogRepository.findByIdOrFail(dto.blogId);
+           }
+    
+           await postRepository.updatePost(id, dto);
           },
   
           async delete(id: string): Promise<void> {
+              await postRepository.findByIdOrFail(id);
               await postRepository.deletePost(id);
               return;
           }

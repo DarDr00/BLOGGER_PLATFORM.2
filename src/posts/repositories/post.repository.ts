@@ -3,7 +3,8 @@ import { postCollection } from "../../db/mongo.db";
 import { ObjectId, WithId } from "mongodb";
 import { RepositoryNotFoundError } from "../../core/errors/ropository-not-found.error";
 import { PostQueryInput } from "../input/post-query.input";
-import { PostAttributes } from "../dtos/post-attributes";
+import { PostCreateInput } from "../input/post-create.input";
+import { PostUpdateInput } from "../input/post-update.input";
 
 export const postRepository = {
     async findMany(
@@ -22,7 +23,7 @@ export const postRepository = {
               const [items, totalCount] = await Promise.all([
                 postCollection
                 .find(filter)
-                .sort({ [sortBy]: sortDirection })
+                .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
                 .skip(skip)
                 .limit(pageSize)
                 .toArray(),
@@ -39,10 +40,11 @@ export const postRepository = {
             page: number;
             pageSize: number;
             totalCount: number }> {
-              const { pageNumber = 1, pageSize = 10 } = queryDto;
+              const { pageNumber = 1, pageSize = 10, sortBy = 'createdAt', sortDirection = 'desc'} = queryDto;
               
                 const items = await postCollection
             .find({ blogId })
+            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
             .skip((pageNumber - 1) * pageSize)
             .limit(pageSize)
             .toArray();
@@ -75,7 +77,7 @@ export const postRepository = {
               return insertResult.insertedId.toString();
           },
       
-          async updatePost(id: string, dto: PostAttributes): Promise<void> {
+          async updatePost(id: string, dto: PostUpdateInput ): Promise<void> {
               const updateResult = await postCollection.updateOne(
               { 
                   _id: new ObjectId(id),
@@ -91,7 +93,7 @@ export const postRepository = {
           )
       
           if (updateResult.matchedCount < 1) {
-              throw new RepositoryNotFoundError('Post with id ${id} not found');
+              throw new RepositoryNotFoundError(`Post with id ${id} not found`);
           }
          return;
       },

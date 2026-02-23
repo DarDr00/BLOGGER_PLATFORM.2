@@ -33,7 +33,7 @@ export function paginationAndSortingValidation<T extends string>(
       .toInt(),
 
     query('sortBy')
-      .default(Object.values(sortFieldsEnum)[0]) 
+      .default(DEFAULT_SORT_BY)
       .isIn(allowedSortFields)
       .withMessage(
         `Invalid sort field. Allowed values: ${allowedSortFields.join(', ')}`,
@@ -45,5 +45,10 @@ export function paginationAndSortingValidation<T extends string>(
       .withMessage(
         `Sort direction must be one of: ${Object.values(SortDirection).join(', ')}`,
       ),
+
+    query('searchNameTerm')
+      .optional()
+      .isString()
+      .trim(),
   ];
 }

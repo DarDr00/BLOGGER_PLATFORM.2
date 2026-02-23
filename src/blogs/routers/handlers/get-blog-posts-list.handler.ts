@@ -3,6 +3,9 @@ import { errorsHandler } from "../../../core/errors/errors.handler";
 import { PostQueryInput } from "../../../posts/input/post-query.input";
 import { postsService } from "../../../posts/application/post.service";
 import { mapToPostListPaginatedOutput } from "../../../posts/routers/mappers/map-to-post-list-paginated-output.util";
+import { matchedData } from "express-validator";
+import { setDefaultSortAndPaginationIfNotExist } from "../../../core/helpers/set-default-sort-and-pagination";
+
 
 export async function getBlogPostsListHandler(
   req: Request<{ id: string }, {}, {}, PostQueryInput>,
@@ -10,7 +13,13 @@ export async function getBlogPostsListHandler(
 ) {
   try {
     const BlogId = req.params.id;
-    const queryInput = req.query;
+
+const sanitizedQuery = matchedData<PostQueryInput>(req, {
+      locations: ['query'],
+      includeOptionals: true,
+    });
+
+    const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
 
     const { items, totalCount } = await postsService.findPostsbyBlog(
       queryInput,
@@ -21,7 +30,6 @@ export async function getBlogPostsListHandler(
         page: queryInput.pageNumber!,
         pageSize: queryInput.pageSize!,
         totalCount: totalCount,
-        pagesCount: totalCount
     });
     res.send(postListOutput);
   } catch (e: unknown) {

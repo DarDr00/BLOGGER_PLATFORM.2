@@ -5,6 +5,7 @@ import { ObjectId, WithId } from "mongodb";
 import { BlogAttributes } from "../application/dtos/blog-attributes";
 import { BlogQueryInput } from "../routers/input/blog-query.input";
 import { RepositoryNotFoundError } from "../../core/errors/ropository-not-found.error";
+import { BlogUpdateInput } from "../routers/input/blog-update.input";
 
 export const blogRepository = {
     async findMany(
@@ -55,7 +56,8 @@ export const blogRepository = {
 
         const items = await blogCollection
             .find(filter)
-            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+            .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1
+             })
             .skip(skip)
             .limit(pageSize)
             .toArray();
@@ -83,7 +85,7 @@ export const blogRepository = {
         return insertResult.insertedId.toString();
     },
 
-    async updateBlog(id: string, dto: BlogAttributes): Promise<void> {
+    async updateBlog(id: string, dto: BlogUpdateInput): Promise<void> {
         const updateResult = await blogCollection.updateOne(
         { 
             _id: new ObjectId(id),

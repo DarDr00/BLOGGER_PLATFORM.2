@@ -6,11 +6,11 @@ import { CreatePostDto } from '../input/create-post.dto';
 
 
 export async function createPostForBlogHandler(
-    req: Request<{ blogId: string }, {}, CreatePostDto>,
+    req: Request<{ id: string }, {}, CreatePostDto>,
     res: Response
 ) {
     try {
-        const blogId = req.params.blogId;
+        const blogId = req.params.id;
         const postData = matchedData(req, { 
             locations: ['body'] 
         }) as CreatePostDto;

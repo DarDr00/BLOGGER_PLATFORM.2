@@ -12,7 +12,7 @@ export async function deletePostHandler(
     const id = req.params.id;
 
     await postsService.delete(id);
-    res.status(HttpStatus.NO_CONTENT_204);
+    res.sendStatus(204);
 
 } catch (e: unknown) {
     errorsHandler(e, res);

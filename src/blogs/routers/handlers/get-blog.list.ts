@@ -8,25 +8,29 @@ import { matchedData } from "express-validator";
 
 
 export async function getBlogListHandler(
-    req: Request<{}, {}, {}, BlogQueryInput>,
+    req: Request<{}, {}, {}, any>,
     res: Response
 ) {
     try {
 
-        const sanitizedQuery = matchedData<BlogQueryInput>(req, {
+         const sanitizedQuery = matchedData(req, {
             locations: ['query'],
             includeOptionals: true,
         });
 
-        const queryInput = setDefaultSortAndPaginationIfNotExist(sanitizedQuery);
+          const mappedQuery = {
+      ...sanitizedQuery,
+      searchBlogNameTerm: sanitizedQuery.searchNameTerm as string | undefined,
+        };
+
+        const queryInput = setDefaultSortAndPaginationIfNotExist(mappedQuery as BlogQueryInput);
 
         const { items, totalCount } = await blogService.findMany(queryInput);
 
         const blogListOutput = mapToBlogListPaginatedOutput(items, {
             page: queryInput.pageNumber!,
             pageSize: queryInput.pageSize!,
-            totalCount: totalCount,
-            pagesCount: totalCount
+            totalCount
         });
 
     res.send(blogListOutput)
